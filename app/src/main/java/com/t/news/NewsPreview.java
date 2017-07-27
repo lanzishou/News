@@ -35,6 +35,8 @@ public class NewsPreview extends Fragment {
 	public SwipeRefreshLayout swipeRefresh;
 	private List<Data> newsList = new ArrayList<>();
 	private List<Data> moreData = new ArrayList<>();
+	private List<Data> reData = new ArrayList<>();
+	private List<Data> allData = new ArrayList<>();
 	private News news;
 	private LinearLayoutManager LayoutManager;
 	private RecyclerView RecyclerView;
@@ -73,6 +75,7 @@ public class NewsPreview extends Fragment {
 		newsString = prefs.getString(path[tabIndex],null);
 		if (newsString != null){
 			news = Utility.handleNewsResponse(newsString);
+			allData.addAll(news.result.dataList);
 			showNews();
 		}else {
 			new MyTask().requestNews(getActivity(), path[tabIndex]);
@@ -103,19 +106,36 @@ public class NewsPreview extends Fragment {
 					@Override
 					public void onResponse(Call call, Response response) throws IOException {
 						String responseText = response.body().string();
-						SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-						editor.putString(path[tabIndex],responseText);
-						editor.apply();
 						news = Utility.handleNewsResponse(responseText);
-						newsString = prefs.getString(path[tabIndex],null);
-						getActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								new MyTask().requestNews(getActivity(), path[tabIndex]);
-								swipeRefresh.setRefreshing(false);
-								showNews();
+						reData.clear();
+						for (int i = 0; i < news.result.dataList.size(); i ++){
+							if(!allData.contains(news.result.dataList.get(i))){
+								reData.add(news.result.dataList.get(i));
 							}
-						});
+						}
+						if (reData.isEmpty()){
+							getActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									Toast.makeText(getContext(), "没有新数据", Toast.LENGTH_SHORT).show();
+									swipeRefresh.setRefreshing(false);
+								}
+							});
+						}else {
+							getActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									newsList.addAll(0, reData);
+									allData.addAll(0, reData);
+									mPagePosition = mPagePosition + reData.size();
+									swipeRefresh.setRefreshing(false);
+									adapter.notifyDataSetChanged();
+								}
+							});
+							SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+							editor.putString(path[tabIndex],responseText);
+							editor.apply();
+						}
 					}
 				});
 			}
@@ -124,7 +144,7 @@ public class NewsPreview extends Fragment {
 			@Override
 			public void loadMoreData() {
 				//加入null值此时adapter会判断item的type
-				if (mPagePosition < news.result.dataList.size()) {
+				if (mPagePosition < allData.size()) {
 					newsList.add(null);
 					adapter.notifyDataSetChanged();
 					handler.postDelayed(new Runnable() {
@@ -164,6 +184,7 @@ public class NewsPreview extends Fragment {
 				public void onResponse(Call call, Response response) throws IOException {
 					final String responseText = response.body().string();
 					news = Utility.handleNewsResponse(responseText);
+					allData.addAll(news.result.dataList);
 					activity.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
@@ -185,7 +206,7 @@ public class NewsPreview extends Fragment {
 	private void showNews(){
 		newsList.clear();
 		for (int i = 0; i < 10; i++) {
-			newsList.add(news.result.dataList.get(i));
+			newsList.add(allData.get(i));
 		}
 		adapter.setData(newsList);
 		adapter.notifyDataSetChanged();
@@ -194,7 +215,7 @@ public class NewsPreview extends Fragment {
 	private void initMoreData() {
 		moreData.clear();
 		for (int i = 0; i < 10; i++) {
-			moreData.add(news.result.dataList.get(mPagePosition + i));
+			moreData.add(allData.get(mPagePosition + i));
 		}
 		mPagePosition = mPagePosition + 10;
 	}
