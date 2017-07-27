@@ -36,7 +36,6 @@ public class NewsPreview extends Fragment {
 	private List<Data> newsList = new ArrayList<>();
 	private List<Data> moreData = new ArrayList<>();
 	private News news;
-	private News renews;
 	private LinearLayoutManager LayoutManager;
 	private RecyclerView RecyclerView;
 	private PreviewAdapter adapter;
