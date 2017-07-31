@@ -72,15 +72,14 @@ public class NewsPreview extends Fragment {
 		Bundle bundle = getArguments();
 		tabIndex = bundle.getInt("tabIndex");
 		prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
-		newsString = prefs.getString(path[tabIndex],null);
-		if (newsString != null){
+		newsString = prefs.getString(path[tabIndex], null);
+		if (newsString != null) {
 			news = Utility.handleNewsResponse(newsString);
 			allData.addAll(news.result.dataList);
-			showNews();
-		}else {
-			new MyTask().requestNews(getActivity(), path[tabIndex]);
-			showNews();
+		} else {
+			requestNews(getActivity(), path[tabIndex]);
 		}
+		showNews();
 		return view;
 	}
 
@@ -108,12 +107,12 @@ public class NewsPreview extends Fragment {
 						String responseText = response.body().string();
 						news = Utility.handleNewsResponse(responseText);
 						reData.clear();
-						for (int i = 0; i < news.result.dataList.size(); i ++){
-							if(!allData.contains(news.result.dataList.get(i))){
+						for (int i = 0; i < news.result.dataList.size(); i++) {
+							if (!allData.contains(news.result.dataList.get(i))) {
 								reData.add(news.result.dataList.get(i));
 							}
 						}
-						if (reData.isEmpty()){
+						if (reData.isEmpty()) {
 							getActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
@@ -121,19 +120,19 @@ public class NewsPreview extends Fragment {
 									swipeRefresh.setRefreshing(false);
 								}
 							});
-						}else {
+						} else {
 							getActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
 									newsList.addAll(0, reData);
 									allData.addAll(0, reData);
 									mPagePosition = mPagePosition + reData.size();
-									swipeRefresh.setRefreshing(false);
 									adapter.notifyDataSetChanged();
+									swipeRefresh.setRefreshing(false);
 								}
 							});
 							SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-							editor.putString(path[tabIndex],responseText);
+							editor.putString(path[tabIndex], responseText);
 							editor.apply();
 						}
 					}
@@ -165,45 +164,43 @@ public class NewsPreview extends Fragment {
 
 	}
 
-	private class MyTask {
-		private void requestNews(final Activity activity,final String url) {
+	private void requestNews(final Activity activity, final String url) {
 
-			Utility.sendOkHttpRequest(url, new Callback() {
-				@Override
-				public void onFailure(Call call, IOException e) {
-					e.printStackTrace();
-					activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
+		Utility.sendOkHttpRequest(url, new Callback() {
+			@Override
+			public void onFailure(Call call, IOException e) {
+				e.printStackTrace();
+				activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(activity, "获取新闻信息失败", Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+
+			@Override
+			public void onResponse(Call call, Response response) throws IOException {
+				final String responseText = response.body().string();
+				news = Utility.handleNewsResponse(responseText);
+				allData.addAll(news.result.dataList);
+				activity.runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (news != null && "成功的返回".equals(news.reason)) {
+							SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+							editor.putString(path[tabIndex], responseText);
+							editor.apply();
+						} else {
 							Toast.makeText(activity, "获取新闻信息失败", Toast.LENGTH_SHORT).show();
 						}
-					});
-				}
+					}
+				});
+			}
+		});
 
-				@Override
-				public void onResponse(Call call, Response response) throws IOException {
-					final String responseText = response.body().string();
-					news = Utility.handleNewsResponse(responseText);
-					allData.addAll(news.result.dataList);
-					activity.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (news != null && "成功的返回".equals(news.reason)) {
-								SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-								editor.putString(path[tabIndex],responseText);
-								editor.apply();
-							} else {
-								Toast.makeText(activity, "获取新闻信息失败", Toast.LENGTH_SHORT).show();
-							}
-						}
-					});
-				}
-			});
-
-		}
 	}
 
-	private void showNews(){
+	private void showNews() {
 		newsList.clear();
 		for (int i = 0; i < 10; i++) {
 			newsList.add(allData.get(i));
