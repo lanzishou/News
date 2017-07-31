@@ -276,7 +276,6 @@ public class NewsPreview extends Fragment {
 				String pic = data.thumbnail_pic_s;
 				Glide.with(mContext).load(pic).into(((MyViewHolder) holder).newsImage);
 				((MyViewHolder) holder).newsTitle.setText(data.title);
-				((MyViewHolder) holder).authorName.setText(data.author_name);
 				((MyViewHolder) holder).newsView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
@@ -303,7 +302,6 @@ public class NewsPreview extends Fragment {
 		class MyViewHolder extends RecyclerView.ViewHolder {
 			ImageView newsImage;
 			TextView newsTitle;
-			TextView authorName;
 			View newsView;
 
 			MyViewHolder(View view) {
@@ -311,7 +309,6 @@ public class NewsPreview extends Fragment {
 				newsView = view;
 				newsImage = (ImageView) view.findViewById(R.id.news_image);
 				newsTitle = (TextView) view.findViewById(R.id.news_title);
-				authorName = (TextView) view.findViewById(R.id.author_name);
 			}
 		}
 
