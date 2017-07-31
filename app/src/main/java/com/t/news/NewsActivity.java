@@ -67,8 +67,6 @@ public class NewsActivity extends AppCompatActivity {
 
 			}
 		});
-		viewPager.setOffscreenPageLimit(0);
-
 	}
 	private void initFragment() {
 		fragmentList = new ArrayList<Fragment>();
