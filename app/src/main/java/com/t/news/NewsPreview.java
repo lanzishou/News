@@ -190,7 +190,7 @@ public class NewsPreview extends Fragment {
 						public void run() {
 							if (news != null && "成功的返回".equals(news.reason)) {
 								SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-								editor.putString(url,responseText);
+								editor.putString(path[tabIndex],responseText);
 								editor.apply();
 							} else {
 								Toast.makeText(activity, "获取新闻信息失败", Toast.LENGTH_SHORT).show();
