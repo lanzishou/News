@@ -12,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -217,7 +216,7 @@ public class NewsPreview extends Fragment {
 		mPagePosition = mPagePosition + 10;
 	}
 
-	class PreviewAdapter extends RecyclerView.Adapter {
+	private class PreviewAdapter extends RecyclerView.Adapter {
 		private Context mContext;
 		private LayoutInflater inflater;
 		private RecyclerView mRecyclerView;
@@ -230,7 +229,7 @@ public class NewsPreview extends Fragment {
 		private List<Data> dataList;
 		private LoadMoreDataListener mMoreDataListener;
 
-		PreviewAdapter(Context context, RecyclerView recyclerView) {
+		public PreviewAdapter(Context context, RecyclerView recyclerView) {
 			mContext = context;
 			inflater = LayoutInflater.from(context);
 			mRecyclerView = recyclerView;
@@ -296,12 +295,12 @@ public class NewsPreview extends Fragment {
 			isLoading = false;
 		}
 
-		class MyViewHolder extends RecyclerView.ViewHolder {
+		public class MyViewHolder extends RecyclerView.ViewHolder {
 			ImageView newsImage;
 			TextView newsTitle;
 			View newsView;
 
-			MyViewHolder(View view) {
+			public MyViewHolder(View view) {
 				super(view);
 				newsView = view;
 				newsImage = (ImageView) view.findViewById(R.id.news_image);
