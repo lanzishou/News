@@ -3,12 +3,7 @@ package com.t.news;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-
 import java.util.List;
-
-/**
- * Created by Administrator on 2017/7/10.
- */
 
 public class FragAdapter extends FragmentPagerAdapter {
 	private List<Fragment> mFragments;

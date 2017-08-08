@@ -1,8 +1,5 @@
 package com.t.news;
 
-/**
- * Created by Administrator on 2017/7/6.
- */
 
 public class Data {
 	public String uniquekey;
