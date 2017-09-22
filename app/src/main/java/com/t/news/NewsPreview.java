@@ -72,10 +72,12 @@ public class NewsPreview extends Fragment {
 		if (newsString != null) {
 			news = Utility.handleNewsResponse(newsString);
 			allData.addAll(news.result.dataList);
+			showNews();
 		} else {
 			requestNews(getActivity(), path[tabIndex]);
+			adapter.setData(newsList);
 		}
-		showNews();
+		adapter.notifyDataSetChanged();
 		return view;
 	}
 
@@ -102,34 +104,43 @@ public class NewsPreview extends Fragment {
 					public void onResponse(Call call, Response response) throws IOException {
 						String responseText = response.body().string();
 						news = Utility.handleNewsResponse(responseText);
-						reData.clear();
-						for (int i = 0; i < news.result.dataList.size(); i++) {
-							if (!allData.contains(news.result.dataList.get(i))) {
-								reData.add(news.result.dataList.get(i));
-							}
-						}
-						if (reData.isEmpty()) {
-							getActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									Toast.makeText(getContext(), "没有新数据", Toast.LENGTH_SHORT).show();
-									swipeRefresh.setRefreshing(false);
+						if (news != null && "成功的返回".equals(news.reason)) {
+							for (int i = 0; i < news.result.dataList.size(); i++) {
+								if (!allData.contains(news.result.dataList.get(i))) {
+									reData.add(news.result.dataList.get(i));
 								}
-							});
+							}
+							if (reData.isEmpty()) {
+								getActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										Toast.makeText(getContext(), "没有新数据", Toast.LENGTH_SHORT).show();
+										swipeRefresh.setRefreshing(false);
+									}
+								});
+							} else {
+								getActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										newsList.addAll(0, reData);
+										allData.addAll(0, reData);
+										mPagePosition = mPagePosition + reData.size();
+										adapter.notifyDataSetChanged();
+										swipeRefresh.setRefreshing(false);
+									}
+								});
+								SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
+								editor.putString(path[tabIndex], responseText);
+								editor.apply();
+							}
 						} else {
 							getActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									newsList.addAll(0, reData);
-									allData.addAll(0, reData);
-									mPagePosition = mPagePosition + reData.size();
-									adapter.notifyDataSetChanged();
+									Toast.makeText(getActivity(), "获取新闻信息失败", Toast.LENGTH_SHORT).show();
 									swipeRefresh.setRefreshing(false);
 								}
 							});
-							SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
-							editor.putString(path[tabIndex], responseText);
-							editor.apply();
 						}
 					}
 				});
@@ -178,11 +189,14 @@ public class NewsPreview extends Fragment {
 			public void onResponse(Call call, Response response) throws IOException {
 				final String responseText = response.body().string();
 				news = Utility.handleNewsResponse(responseText);
-				allData.addAll(news.result.dataList);
 				activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						if (news != null && "成功的返回".equals(news.reason)) {
+							allData.addAll(news.result.dataList);
+							for (int i = 0; i < 10; i++) {
+								newsList.add(allData.get(i));
+							}
 							SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
 							editor.putString(path[tabIndex], responseText);
 							editor.apply();
@@ -202,7 +216,6 @@ public class NewsPreview extends Fragment {
 			newsList.add(allData.get(i));
 		}
 		adapter.setData(newsList);
-		adapter.notifyDataSetChanged();
 	}
 
 	private void initMoreData() {
