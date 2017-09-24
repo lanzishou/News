@@ -59,6 +59,31 @@ public class NewsPreview extends Fragment {
 		View view = inflater.inflate(R.layout.news_preview, container, false);
 		RecyclerView = (RecyclerView) view.findViewById(R.id.news_preview);
 		swipeRefresh = (SwipeRefreshLayout) view.findViewById(R.id.sfl);
+//		swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
+//		LayoutManager = new LinearLayoutManager(getContext());
+//		LayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+//		RecyclerView.setLayoutManager(LayoutManager);
+//		adapter = new PreviewAdapter(getContext(), RecyclerView);
+//		RecyclerView.setAdapter(adapter);
+//		Bundle bundle = getArguments();
+//		tabIndex = bundle.getInt("tabIndex");
+//		prefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+//		newsString = prefs.getString(path[tabIndex], null);
+//		if (newsString != null) {
+//			news = Utility.handleNewsResponse(newsString);
+//			allData.addAll(news.result.dataList);
+//			showNews();
+//		} else {
+//			requestNews(getActivity(), path[tabIndex]);
+//			adapter.setData(newsList);
+//		}
+//		adapter.notifyDataSetChanged();
+		return view;
+	}
+
+	@Override
+	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
 		LayoutManager = new LinearLayoutManager(getContext());
 		LayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -75,15 +100,7 @@ public class NewsPreview extends Fragment {
 			showNews();
 		} else {
 			requestNews(getActivity(), path[tabIndex]);
-			adapter.setData(newsList);
 		}
-		adapter.notifyDataSetChanged();
-		return view;
-	}
-
-	@Override
-	public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
 		swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
 			@Override
 			public void onRefresh() {
@@ -104,7 +121,7 @@ public class NewsPreview extends Fragment {
 					public void onResponse(Call call, Response response) throws IOException {
 						String responseText = response.body().string();
 						news = Utility.handleNewsResponse(responseText);
-						if (news != null && "成功的返回".equals(news.reason)) {
+						if (news != null) {
 							for (int i = 0; i < news.result.dataList.size(); i++) {
 								if (!allData.contains(news.result.dataList.get(i))) {
 									reData.add(news.result.dataList.get(i));
@@ -192,11 +209,13 @@ public class NewsPreview extends Fragment {
 				activity.runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						if (news != null && "成功的返回".equals(news.reason)) {
+						if (news != null) {
 							allData.addAll(news.result.dataList);
 							for (int i = 0; i < 10; i++) {
 								newsList.add(allData.get(i));
 							}
+							adapter.setData(newsList);
+							adapter.notifyDataSetChanged();
 							SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getContext()).edit();
 							editor.putString(path[tabIndex], responseText);
 							editor.apply();
@@ -216,6 +235,7 @@ public class NewsPreview extends Fragment {
 			newsList.add(allData.get(i));
 		}
 		adapter.setData(newsList);
+		adapter.notifyDataSetChanged();
 	}
 
 	private void initMoreData() {
